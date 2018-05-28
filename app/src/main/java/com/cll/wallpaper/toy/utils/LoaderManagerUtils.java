@@ -8,9 +8,11 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.cll.wallpaper.toy.App;
 import com.cll.wallpaper.toy.bean.Folder;
 import com.cll.wallpaper.toy.bean.Image;
 import com.cll.wallpaper.toy.bean.Video;
+import com.cll.wallpaper.toy.constants.ShowType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,48 +37,73 @@ public class LoaderManagerUtils {
             MediaStore.Video.Media.DATE_ADDED,
             MediaStore.Video.Media.MIME_TYPE,
             MediaStore.Video.Media.SIZE,
-            MediaStore.Video.Media._ID};
+            MediaStore.Video.Media._ID,
+            MediaStore.Video.Thumbnails.DATA};
 
     static String[] thumbColumns = new String[]{
             MediaStore.Video.Thumbnails.DATA,
-            MediaStore.Video.Thumbnails.VIDEO_ID
+            MediaStore.Video.Thumbnails.VIDEO_ID,
     };
 //    private static ArrayList<Folder> mResultFolder = new ArrayList<>();
 
+    private static int IDENTIFIER_IMAGE = 0;
+    private static int IDENTIFIER_VIDEO = 1;
     public static CursorLoader createCursorLoader(Context context, int id){
         CursorLoader mCursorLoader = null;
-        if(id == 0){
+        if(id == IDENTIFIER_IMAGE){
             mCursorLoader = new CursorLoader(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                     IMAGE_PROJECTION,IMAGE_PROJECTION[4] + ">0 AND " + IMAGE_PROJECTION[3] + "=? OR " + IMAGE_PROJECTION[3] + "=? ",
                     new String[]{"image/jpeg", "image/png"}, IMAGE_PROJECTION[2] + " DESC");
-//            mCursorLoader = new CursorLoader(context, MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                    IMAGE_PROJECTION,null,
-//                    null,null);
-//        }
-//
-//        if (false){
-//            mCursorLoader = new CursorLoader(context, MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-//                    VIDEO_PROJECTION, VIDEO_PROJECTION[4] + " > 0", null , null);
-//
-//            Log.w("TAG", "test onLoadFinished " + "1");
-
-
+        }else if (id == IDENTIFIER_VIDEO){
+            mCursorLoader = new CursorLoader(context, MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                    VIDEO_PROJECTION, VIDEO_PROJECTION[4] + " > 0", null , null);
         }
         return  mCursorLoader;
     }
 
     private static boolean hasFolderGened = false;
-    public static void loaderFinish(Context context , Cursor data, int mRequestType, List<Image> images, ArrayList<Folder> mResultFolder){
+    public static List<Image>  loaderFinish(Cursor data,  ArrayList<Folder> mResultFolder){
         if(data != null){
             if (data.getCount() > 0){
                 data.moveToFirst();
-                getImageData(data,images,mResultFolder);
+                return getImageData(data,mResultFolder);
             }
-
         }
+        return null;
     }
 
-    private static void getImageData(Cursor data, List<Image> images, ArrayList<Folder> mResultFolder){
+    public static  List<Video> getVideoDate(Cursor data){
+        List<Video> videos = new ArrayList<>();
+        if (data == null){
+            return null;
+        }
+        data.moveToFirst();
+        do {
+            String thumbnailPath = null;
+            int id = data.getInt(data
+                    .getColumnIndex(MediaStore.Video.Media._ID));
+            Cursor thumbCursor = App.getContext().getContentResolver().query(
+                    MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI,
+                    thumbColumns, MediaStore.Video.Thumbnails.VIDEO_ID
+                            + "=" + id, null, null);
+            if (thumbCursor .moveToFirst()){
+                thumbnailPath = thumbCursor.getString(thumbCursor.getColumnIndex(VIDEO_PROJECTION[6]));
+            }
+            String path = data.getString(data.getColumnIndex(VIDEO_PROJECTION[0]));
+            String name = data.getString(data.getColumnIndexOrThrow(VIDEO_PROJECTION[1]));
+            long dateTime = data.getLong(data.getColumnIndexOrThrow(VIDEO_PROJECTION[2]));
+            Video video = null;
+            if (fileExist(path) && !TextUtils.isEmpty(name)) {
+                video = new Video(path, thumbnailPath);
+                videos.add(video);
+            }
+        }while (data.moveToNext());
+        return videos;
+    }
+
+    private static List<Image>  getImageData(Cursor data, ArrayList<Folder> mResultFolder){
+        List<Image> images = new ArrayList<>();
+        images.clear();
         do {
             String path = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[0]));
             String name = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[1]));
@@ -106,6 +133,8 @@ public class LoaderManagerUtils {
                 }
             }
         }while (data.moveToNext());
+
+        return images;
     }
 
     public static  List<Video> getVideoDate(final Context context, final Cursor data){

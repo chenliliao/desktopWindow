@@ -5,6 +5,7 @@ import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -23,6 +24,8 @@ import com.cll.wallpaper.toy.adapter.VideoGridViewAdapter;
 import com.cll.wallpaper.toy.bean.Folder;
 import com.cll.wallpaper.toy.bean.Image;
 import com.cll.wallpaper.toy.bean.Video;
+import com.cll.wallpaper.toy.constants.Constants;
+import com.cll.wallpaper.toy.constants.ShowType;
 import com.cll.wallpaper.toy.utils.LoaderManagerUtils;
 
 import java.util.ArrayList;
@@ -37,12 +40,16 @@ public class ImageSelectorActivity extends Activity {
     private Context mContext;
     private GridView mImageGridView;
     private List<Image> images = new ArrayList<>();
+    private List<Video> videos = new ArrayList<>();
     private ArrayList<Folder> mResultFolder = new ArrayList<>();
     private ImageGridViewAdapter mAdapter;
     private Toolbar mSettingTypeToolbar;
     private Button mCategoryButton;
     private ListView mFolderListView;
     private ImageFolderAdapter folderAdapter;
+    private SharedPreferences mShare;
+    private int IDENTIFIER_IMAGE = 0;
+    private int IDENTIFIER_VIDEO = 1;
 
     @Override
     public void onAttachedToWindow() {
@@ -73,9 +80,18 @@ public class ImageSelectorActivity extends Activity {
         mImageGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Image image = (Image) parent.getAdapter().getItem(position);
+                String path = null;
+                if (mShare.getInt(Constants.SHARE_MODE, ShowType.IMAGE.ordinal()) == ShowType.IMAGE.ordinal()){
+                    Image image = (Image) parent.getAdapter().getItem(position);
+                    path = image.path;
+                }else if (mShare.getInt(Constants.SHARE_MODE, ShowType.IMAGE.ordinal()) == ShowType.VIDEO.ordinal()){
+                    Video video = (Video) parent.getAdapter().getItem(position);
+                    path = video.getPath();
+                }
+
+                Log.w("TAG","test setOnItemClickListener"+path);
                 Intent intent = new Intent();
-                intent.putExtra("seletor_result", image.path);
+                intent.putExtra(Constants.CONSTANT_SELETOR_RESULT, path);
                 setResult(RESULT_OK, intent);
                 finish();
             }
@@ -105,8 +121,14 @@ public class ImageSelectorActivity extends Activity {
         });
     }
 
+
     private void initAllImageData(){
-        getLoaderManager().restartLoader(0, null,mLoaderCallback);
+        mShare = this.getSharedPreferences(Constants.SHARE_NAME, Context.MODE_PRIVATE);
+        if (mShare.getInt(Constants.SHARE_MODE, ShowType.IMAGE.ordinal()) == ShowType.IMAGE.ordinal()){
+            getLoaderManager().restartLoader(IDENTIFIER_IMAGE, null,mLoaderCallback);
+        }else {
+            getLoaderManager().restartLoader(IDENTIFIER_VIDEO, null,mLoaderCallback);
+        }
     }
 
 
@@ -114,20 +136,23 @@ public class ImageSelectorActivity extends Activity {
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-
             return LoaderManagerUtils.createCursorLoader(mContext,id);
         }
 
         @Override
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
-            LoaderManagerUtils.loaderFinish(mContext,data,2,images,mResultFolder);
-            mAdapter = new ImageGridViewAdapter(ImageSelectorActivity.this,images);
-            mImageGridView.setAdapter(mAdapter);
+            if (mShare.getInt(Constants.SHARE_MODE, ShowType.IMAGE.ordinal()) == ShowType.IMAGE.ordinal()){
+                List<Image> images =  LoaderManagerUtils.loaderFinish(data, mResultFolder);
+                mAdapter = new ImageGridViewAdapter(ImageSelectorActivity.this,images);
+                mImageGridView.setAdapter(mAdapter);
+            }else if (mShare.getInt(Constants.SHARE_MODE, ShowType.IMAGE.ordinal()) == ShowType.VIDEO.ordinal()){
+                videos = LoaderManagerUtils.getVideoDate(data);
+                VideoGridViewAdapter videoAdapter = new VideoGridViewAdapter(mContext, videos);
+                mImageGridView.setAdapter(videoAdapter);
+            }
         }
         @Override
         public void onLoaderReset(Loader<Cursor> loader) {
-
         }
     };
 }

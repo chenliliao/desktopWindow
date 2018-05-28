@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.TextureView;
+import android.widget.Toast;
 
 import com.cll.wallpaper.toy.constants.Constants;
 
@@ -63,9 +64,10 @@ public enum PlayingManager{
             }
 
             try {
-                String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/i.mp4";
-                if (new File(path).exists()){
-                    mMediaPlayer.setDataSource(Environment.getExternalStorageDirectory().getAbsolutePath() + "/i.mp4");
+//                String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/i.mp4";
+                if (new File(MainActivity.getVideoPath()).exists()){
+                    Toast.makeText(App.getContext(), "MainActivity.getVideoPath() = "+MainActivity.getVideoPath(), Toast.LENGTH_SHORT).show();
+                    mMediaPlayer.setDataSource(MainActivity.getVideoPath());
                 }else{
                     mMediaPlayer.setDataSource(App.getContext().getResources().getAssets().openFd("i.mp4"));
                 }

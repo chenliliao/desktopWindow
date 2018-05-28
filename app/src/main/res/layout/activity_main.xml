@@ -18,29 +18,56 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.9"/>
 
-    <Button
-        android:id="@+id/button_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="图片"
-        app:layout_constraintTop_toTopOf="parent"/>
 
-    <Button
-        android:id="@+id/button_video"
-        android:layout_width="wrap_content"
+   <LinearLayout
+       android:id="@+id/current_layout"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:gravity="center"
+       android:layout_marginTop="8dp">
+
+       <TextView
+           android:layout_height="wrap_content"
+           android:layout_width="wrap_content"
+           android:text="当前模式: "
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toTopOf="parent" />
+       <TextView
+           android:id="@+id/current_text_view"
+           android:layout_height="wrap_content"
+           android:layout_width="wrap_content"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toTopOf="parent" />
+   </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/mode_layout"
+        android:gravity="center"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="56dp"
-        android:text="视频"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@+id/current_layout">
+
+        <Button
+            android:id="@+id/button_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="图片" />
+
+        <Button
+            android:id="@+id/button_video"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="视频" />
 
 
-    <Button
-        android:id="@+id/button_gif"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:text="gif"
-        app:layout_constraintTop_toTopOf="parent"/>
+        <Button
+            android:id="@+id/button_gif"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="gif" />
+    </LinearLayout>
+
+
 
     <RadioGroup
         android:id="@+id/radio_group"

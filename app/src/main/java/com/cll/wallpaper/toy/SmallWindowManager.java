@@ -22,12 +22,14 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.cll.wallpaper.toy.constants.Constants;
 import com.cll.wallpaper.toy.constants.ShowType;
 import com.cll.wallpaper.toy.utils.WindowUtils;
-import com.cunoraz.gifview.library.GifView;
+
+import pl.droidsonroids.gif.GifImageView;
 
 
 /**
@@ -67,7 +69,7 @@ public enum SmallWindowManager {
         final View view = LayoutInflater.from(context).inflate(R.layout.wallpaper_layout, null);
         final ImageView imageView = view.findViewById(R.id.icon_image_view);
         final TextureView mTextureView = view.findViewById(R.id.surface_view);
-        final GifView mGifView = view.findViewById(R.id.gifview);
+        final GifImageView mGifView = view.findViewById(R.id.gifview);
         if (mShare.getInt(Constants.SHARE_MODE, ShowType.IMAGE.ordinal()) == ShowType.IMAGE.ordinal()){
             mTextureView.setVisibility(View.GONE);
             mGifView.setVisibility(View.GONE);
@@ -86,8 +88,8 @@ public enum SmallWindowManager {
             mTextureView.setVisibility(View.GONE);
             imageView.setVisibility(View.GONE);
             mGifView.setVisibility(View.VISIBLE);
-            mGifView.setGifResource(R.drawable.a);
-            mGifView.pause();
+//            mGifView.setGifResource(R.drawable.a);
+//            mGifView.pause();
         }
         WindowUtils.Builders builders = new WindowUtils.Builders(context)
                 .setFloatView(view)
@@ -96,7 +98,7 @@ public enum SmallWindowManager {
         if (mShare.getInt(Constants.SHARE_MODE, ShowType.IMAGE.ordinal()) == ShowType.VIDEO.ordinal()){
             PlayingManager.SINGLETON.play(mTextureView);
         }else if (mShare.getInt(Constants.SHARE_MODE, ShowType.IMAGE.ordinal()) == ShowType.GIF.ordinal()){
-            mGifView.play();
+            mGifView.setImageResource(R.drawable.a);
         }
         isOpen = true;
         return builders;

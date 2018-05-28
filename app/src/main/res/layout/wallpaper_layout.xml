@@ -15,11 +15,19 @@
         android:layout_height="match_parent"
         android:visibility="gone"/>
 
-    <com.cunoraz.gifview.library.GifView
+    <!--<com.cunoraz.gifview.library.GifView-->
+        <!--android:id="@+id/gifview"-->
+        <!--android:layout_centerVertical="true"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:visibility="gone"/>-->
+
+    <pl.droidsonroids.gif.GifImageView
         android:id="@+id/gifview"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 </RelativeLayout>

@@ -12,4 +12,8 @@ public class Constants {
     public static final String SHARE_AUDIO = "audio";
     public static final String SHARE_IS_OPEN = "isopen";
     public static final String SHARE_PROGRESS = "progress";
+
+    public static final String CONSTANT_SELETOR_RESULT = "seletor_result";
+
+
 }

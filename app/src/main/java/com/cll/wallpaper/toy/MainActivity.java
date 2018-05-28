@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cll.wallpaper.toy.constants.Constants;
@@ -40,8 +41,11 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "[WallPaper]MainActivity";
     private boolean isOpen = false;
     private Button mButtonSetting ,mButtonImage, mButtonVideo, mButtonGif;
+    private TextView mCurrentMode;
     private int REQUEST_CODE_IMAGE = 1;
+    private int REQUEST_CODE_VIDEO = 2;
     private static String imagePath = null;
+    private static String videoPath = null;
     private  SharedPreferences mShare;
     private SeekBar mSeekBar;
     private RadioButton mRadioButton;
@@ -68,7 +72,9 @@ public class MainActivity extends AppCompatActivity {
         mSeekBar = findViewById(R.id.seek_bar);
         mRadioButton = findViewById(R.id.radio_button2);
         mRadioGroup = findViewById(R.id.radio_group);
+        mCurrentMode = findViewById(R.id.current_text_view);
 
+        refreshMode();
         Toast.makeText(this, "pro"+mShare.getInt(Constants.SHARE_PROGRESS, 90), Toast.LENGTH_SHORT).show();
         mSeekBar.setProgress(mShare.getInt(Constants.SHARE_PROGRESS, 90));
         mSeekBar.setKeyProgressIncrement(10);
@@ -117,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     mShare.edit().putBoolean(Constants.SHARE_IS_OPEN, true).commit();
                     Log.w(TAG,"app start service");
+                    refreshMode();
                     SmallWindowManager.SINGLETON.startService(MainActivity.this);
                 }
             }
@@ -143,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mShare.edit().putInt(Constants.SHARE_MODE, ShowType.VIDEO.ordinal()).commit();
+                startActivityForResult(new Intent(MainActivity.this, ImageSelectorActivity.class), REQUEST_CODE_VIDEO);
             }
         });
 
@@ -154,6 +162,19 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
+    private void refreshMode(){
+        if (mCurrentMode != null && mShare != null){
+            int mode = mShare.getInt(Constants.SHARE_MODE, ShowType.IMAGE.ordinal());
+            if (mode == ShowType.IMAGE.ordinal()){
+                mCurrentMode.setText(ShowType.IMAGE.getValue());
+            }else if (mode == ShowType.VIDEO.ordinal()){
+                mCurrentMode.setText(ShowType.VIDEO.getValue());
+            }else if (mode == ShowType.GIF.ordinal()){
+                mCurrentMode.setText(ShowType.GIF.getValue());
+            }
+        }
+    }
 
     private boolean checkPemission(){
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M){
@@ -177,6 +198,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        refreshMode();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         checkPemission();
@@ -187,14 +214,27 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_IMAGE){
             if (resultCode == Activity.RESULT_OK){
-                imagePath = data.getStringExtra("seletor_result");
+                imagePath = data.getStringExtra(Constants.CONSTANT_SELETOR_RESULT);
                 if (!TextUtils.isEmpty(imagePath)){
                     if (mShare.getBoolean(Constants.SHARE_IS_OPEN, false)){
                         SmallWindowManager.SINGLETON.stopService(MainActivity.this);
                         SmallWindowManager.SINGLETON.startService(MainActivity.this);
                     }
                 }
+                refreshMode();
                 Toast.makeText(this, "就决定是你了", Toast.LENGTH_SHORT).show();
+            }
+        }else if (requestCode == REQUEST_CODE_VIDEO){
+            if (resultCode == Activity.RESULT_OK){
+                videoPath = data.getStringExtra(Constants.CONSTANT_SELETOR_RESULT);
+                if (!TextUtils.isEmpty(videoPath)){
+                    if (mShare.getBoolean(Constants.SHARE_IS_OPEN, false)){
+                        SmallWindowManager.SINGLETON.stopService(MainActivity.this);
+                        SmallWindowManager.SINGLETON.startService(MainActivity.this);
+                    }
+                }
+                refreshMode();
+                Toast.makeText(this, "就决定是你了"+videoPath, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -202,6 +242,10 @@ public class MainActivity extends AppCompatActivity {
 
     public static String getPath(){
         return imagePath;
+    }
+
+    public static String getVideoPath(){
+        return videoPath;
     }
 
     @Override

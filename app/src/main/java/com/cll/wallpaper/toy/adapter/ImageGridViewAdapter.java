@@ -97,8 +97,6 @@ public class ImageGridViewAdapter extends BaseAdapter {
                     .centerCrop()
                     .into(mHolder.image);
         }
-
-
     }
 
     private class ViewHolder{
